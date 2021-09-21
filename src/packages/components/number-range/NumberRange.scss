@@ -1,0 +1,17 @@
+.number-range {
+  display: inline-flex;
+  align-items: center;
+
+  & > input {
+    width: calc(50% - 1em);
+    border: 1px solid #ccc;
+  }
+  & > input:focus {
+    outline: 1px solid #ccc;
+  }
+
+  & > i {
+    text-align: center;
+    width: 2em;
+  }
+}

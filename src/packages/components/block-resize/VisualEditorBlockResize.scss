@@ -1,0 +1,57 @@
+.visual-block__resize {
+  $offset: 7px;
+  $primary: #409EFF;
+  $size: 6px;
+  position: absolute;
+  top: -$offset;
+  right: -$offset;
+  bottom: -$offset;
+  left: -$offset;
+  width: $size;
+  height: $size;
+  background-color: $primary;
+  &.block-resize__top__left {
+    right: auto;
+    bottom: auto;
+    cursor: nw-resize;
+  }
+  &.block-resize__top {
+    left: calc(50% - #{$size / 2});
+    right: auto;
+    bottom: auto;
+    cursor: n-resize;
+  }
+  &.block-resize__top__right {
+    left: auto;
+    bottom: auto;
+    cursor: ne-resize;
+  }
+  &.block-resize__left {
+    top: calc(50% - #{$size / 2});
+    bottom: auto;
+    right: auto;
+    cursor: w-resize;
+  }
+  &.block-resize__right {
+    top: calc(50% - #{$size / 2});
+    left: auto;
+    bottom: auto;
+    cursor: e-resize;
+  }
+  &.block-resize__bottom__left {
+    right: auto;
+    top: auto;
+    cursor: sw-resize;
+  }
+  &.block-resize__bottom {
+    left: calc(50% - #{$size / 2});
+    right: auto;
+    top: auto;
+    cursor: s-resize;
+  }
+  &.block-resize__bottom__right {
+    left: auto;
+    top: auto;
+    cursor: se-resize;
+  }
+}
