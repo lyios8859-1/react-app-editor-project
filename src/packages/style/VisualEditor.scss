@@ -1,0 +1,23 @@
+
+@import "../../asset/font/iconfont.css";
+
+$headSize: 60px;
+$menuSize: 275px;
+$operatorSize: 275px;
+
+$ibc: #dcdfe6;
+$ibl: #ebeef5;
+$itc: #314659;
+$icc: rgba(0, 0, 0, 0.45);
+$boxShadowColor: #f0f1f2;
+$primary: #409EFF;
+
+$gap: 20px;
+
+.visual-editor__container {
+  position: fixed;
+  top: $gap;
+  left: $gap;
+  right: $gap;
+  bottom: $gap;
+}
