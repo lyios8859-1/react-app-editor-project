@@ -20,4 +20,54 @@ $gap: 20px;
   left: $gap;
   right: $gap;
   bottom: $gap;
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #ccc;
+  }
+  .visual-editor__menu,
+  .visual-editor__head,
+  .visual-editor__operator,
+  .visual-editor__body {
+    position: absolute;
+    &.visual-editor__menu {
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: $menuSize;
+      box-sizing: border-box;
+      background-color:#fff;
+      border-right: 1px solid $ibc;
+    }
+    &.visual-editor__head {
+      top: 0;
+      left: $menuSize;
+      right: $operatorSize;
+      height: $headSize;;
+      background-color: #fff;
+      border-bottom: 1px solid $ibc;
+    }
+    &.visual-editor__operator {
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: $operatorSize;
+      background-color: #fff;
+      box-sizing: border-box;
+      border-left: 1px solid $ibc;
+    }
+    &.visual-editor__body {
+      top: $headSize;
+      left: $menuSize;
+      right: $operatorSize;
+      bottom: 0;
+      box-sizing: border-box;
+      padding: 2px;
+      background-color: #f6f6f6;
+    }
+  }
 }
