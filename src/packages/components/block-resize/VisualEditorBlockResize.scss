@@ -1,7 +1,9 @@
+@use "sass:math";
 .visual-block__resize {
   $offset: 7px;
   $primary: #409EFF;
   $size: 6px;
+  $sizeHalf: math.div($size, 2);
   position: absolute;
   top: -$offset;
   right: -$offset;
@@ -16,7 +18,7 @@
     cursor: nw-resize;
   }
   &.block-resize__top {
-    left: calc(50% - #{$size / 2});
+    left: calc(50% - #{$sizeHalf});
     right: auto;
     bottom: auto;
     cursor: n-resize;
@@ -27,13 +29,13 @@
     cursor: ne-resize;
   }
   &.block-resize__left {
-    top: calc(50% - #{$size / 2});
+    top: calc(50% - #{$sizeHalf});
     bottom: auto;
     right: auto;
     cursor: w-resize;
   }
   &.block-resize__right {
-    top: calc(50% - #{$size / 2});
+    top: calc(50% - #{$sizeHalf});
     left: auto;
     bottom: auto;
     cursor: e-resize;
@@ -44,7 +46,7 @@
     cursor: sw-resize;
   }
   &.block-resize__bottom {
-    left: calc(50% - #{$size / 2});
+    left: calc(50% - #{$sizeHalf});
     right: auto;
     top: auto;
     cursor: s-resize;
