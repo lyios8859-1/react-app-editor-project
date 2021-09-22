@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from 'antd';
+import { MenuUnfoldOutlined } from '@ant-design/icons'
 
 import styles from  './style/VisualEditor.module.scss';
 import { VisualEditorConfig, VisualEditorValue } from './editor.utils';
@@ -22,6 +23,9 @@ export const VisualEditor: React.FC<{
         editing ? (
           <div className={styles['visual-editor__container']}>
             <div className={styles['visual-editor__menu']}>
+              <div className={styles['visual-editor__menu__title']}>
+                <MenuUnfoldOutlined /> <span>组件列表</span>
+              </div>
               {
                 props.config.componentList.map((component, index) => {
                   return (

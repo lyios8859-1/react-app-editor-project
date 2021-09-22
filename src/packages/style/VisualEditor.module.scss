@@ -44,11 +44,16 @@ $gap: 20px;
       background-color:#fff;
       box-sizing: border-box;
       user-select: none;
+      .visual-editor__menu__title {
+        font-size: 22px;
+        color: $primary;
+        border-bottom: 1px solid $ibc;
+      }
       .editor-menu__item {
         position: relative;
         border: 2px solid $ibc;
         height: 80px;
-        margin-bottom: 20px;
+        margin: 20px 0;
         &::after {
           content: '';
           position: absolute;
