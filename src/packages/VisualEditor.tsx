@@ -1,21 +1,55 @@
-import './style/VisualEditor.scss';
+import { useState } from 'react';
+import { Button } from 'antd';
 
-import { VisualEditorValue } from './editor.utils';
+import styles from  './style/VisualEditor.module.scss';
+import { VisualEditorConfig, VisualEditorValue } from './editor.utils';
 
 export const VisualEditor: React.FC<{
-  value: VisualEditorValue
+  value: VisualEditorValue,
+  config: VisualEditorConfig
 }> = (props) => {
-  console.log(props.value);
+  // 当前是否处于编辑状态
+  const [editing, setEditing] = useState(true);
+  
+  
+  const methods = {
+    toggleEditing () {
+      setEditing(!editing);
+    }
+  }
   return (<>
-    <div className="visual-editor__container">
-      <div className="visual-editor__menu">menu</div>
-      <div className="visual-editor__head">header</div>
-      <div className="visual-editor__operator">operator</div>
-      <div className="visual-editor__body">body</div>
-    </div>
+      {
+        editing ? (
+          <div className={styles['visual-editor__container']}>
+            <div className={styles['visual-editor__menu']}>
+              {
+                props.config.componentList.map((component, index) => {
+                  return (
+                    <div key={component.key + '_' + index} className={styles['editor-menu__item']}>
+                      <span className={styles['menu-item__title']}>{component.label}</span>
+                      <div className={styles['menu-item__content']}>
+                        {component.prievew()}
+                      </div>
+                    </div>
+                  )
+                })
+              }
+            </div>
+            <div className={styles['visual-editor__head']}>header <button onClick={methods.toggleEditing}>运行</button></div>
+            <div className={styles['visual-editor__operator']}>operator</div>
+            <div className={styles['visual-editor__body']}>body</div>
+          </div>
+        ) : (
+          <div className={styles['visual-editor__preview']}>
+            <div className={styles['editor-preview__edit']} onClick={methods.toggleEditing}><Button>编辑</Button></div>
+            <div className={styles['editor-preview__content']}>
+              预览区域
+            </div>
+          </div>
+        )
+      }
   </>);
 };
-
 
 // import { useRef, useState } from 'react'
 // import { useCallbackRef } from './hook/useCallbackRef';

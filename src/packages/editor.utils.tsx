@@ -25,3 +25,50 @@ export interface VisualEditorValue {
     },
     blocks: VisualEditorBlock[]
 }
+
+/**
+ * 编辑器中自定义组件的类型
+ */
+export interface VisualEditorComponent {
+    key: string, // key 组件唯一标识符
+    label: string, // label 组件左侧显示名
+    render: (data: { // render 组件渲染函数，拖拽后在容器区与呈现的函数
+        block: VisualEditorBlock,
+        size: {width?: string, height?: string},
+    }) => JSX.Element,
+    prievew: () => JSX.Element, // prievew 组件左侧预览函数
+
+}
+
+/**
+ * 创建编辑器的预设内容
+ */
+export function createVisualConfig() {
+    // 用于 block 数据，通过 componentKey 找到 component 对象，使用 component 对象的 render 属性渲染内容到 container 容器里
+    const componentMap: { [k: string]: VisualEditorComponent } = {};
+    // 用户在 menu 中预定义的组件列表
+    const componentList: VisualEditorComponent[] = [];
+
+    const registryComponent = (key: string, options: Omit<VisualEditorComponent, 'key'>) => {
+        // key 是唯一的
+        if (componentMap[key]) {
+            const index = componentList.indexOf(componentMap[key]);
+            componentList.splice(index, 1);
+        }
+        const newComponent = {
+            key,
+            ...options
+        }
+
+        componentList.push(newComponent);
+        componentMap[key] = newComponent;
+    }
+
+    return {
+        componentList,
+        componentMap,
+        registryComponent
+    }
+}
+
+export type VisualEditorConfig = ReturnType<typeof createVisualConfig>;
