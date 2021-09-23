@@ -1,7 +1,7 @@
 /**
  * 容器中每个元素的的数据类型
  */
-export interface VisualEditorBlock {
+export interface VisualEditorBlockData {
     componentKey: string, // component 对象的的 key，通过该值找到 visual config 中的对应的 component
     top: number, // block 在容器中的 top 位置
     left: number, // block 在容器中的 left 位置
@@ -23,7 +23,7 @@ export interface VisualEditorValue {
         height: number,
         width: number,
     },
-    blocks: VisualEditorBlock[]
+    blocks: VisualEditorBlockData[]
 }
 
 /**
@@ -33,7 +33,7 @@ export interface VisualEditorComponent {
     key: string, // key 组件唯一标识符
     label: string, // label 组件左侧显示名
     render: (data: { // render 组件渲染函数，拖拽后在容器区与呈现的函数
-        block: VisualEditorBlock,
+        block: VisualEditorBlockData,
         size: {width?: string, height?: string},
     }) => JSX.Element,
     prievew: () => JSX.Element, // prievew 组件左侧预览函数

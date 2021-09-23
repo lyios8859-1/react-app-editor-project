@@ -102,8 +102,15 @@ $gap: 20px;
       box-sizing: border-box;
       padding: 2px;
       background-color: #f6f6f6;
+      overflow: auto;
     }
   }
+}
+
+.editor-body_container {
+  position: relative;
+  margin: 0 auto;
+  background-color: #fff;
 }
 
 .visual-editor__preview {
@@ -112,16 +119,32 @@ $gap: 20px;
   width: 100%;
   background-color: rgba(black, 0.1);
   .editor-preview__edit {
-    position: absolute;
-    right: 10px;
-    top: 10px;
+    position: fixed;
+    right: 2%;
+    top: 2%;
+    z-index: 10;
   }
-  .editor-preview__content {
+  .preview-edit__warpper {
     position: absolute;
-    left: 50%;
     top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
-    width: auto;
-    height: auto;
+  }
+}
+
+
+/* 自定义滚动条样式*/
+.custom-bar__style {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 1em;
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  &::-webkit-scrollbar-track {
+    border-radius: 1em;
+    background-color: transparent;
   }
 }

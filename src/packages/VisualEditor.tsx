@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from 'antd';
 import { MenuUnfoldOutlined } from '@ant-design/icons'
 
+import './style/common.scss';
+
 import styles from  './style/VisualEditor.module.scss';
 import { VisualEditorConfig, VisualEditorValue } from './editor.utils';
+import { VisualEditorBlock } from './EditorBlock';
 
 export const VisualEditor: React.FC<{
   value: VisualEditorValue,
@@ -11,13 +14,18 @@ export const VisualEditor: React.FC<{
 }> = (props) => {
   // 当前是否处于编辑状态
   const [editing, setEditing] = useState(true);
-  
-  
   const methods = {
     toggleEditing () {
       setEditing(!editing);
     }
   }
+
+  const containerStyles = useMemo(() => {
+    return {
+      width: `${props.value.container.width}px`,
+      height: `${props.value.container.height}px`,
+    }
+  }, [props.value.container.height, props.value.container.width]);
   return (<>
       {
         editing ? (
@@ -41,13 +49,37 @@ export const VisualEditor: React.FC<{
             </div>
             <div className={styles['visual-editor__head']}>header <button onClick={methods.toggleEditing}>运行</button></div>
             <div className={styles['visual-editor__operator']}>operator</div>
-            <div className={styles['visual-editor__body']}>body</div>
+            <div className={`${styles['visual-editor__body']} ${styles['custom-bar__style']}`}>
+              <div className={`${styles['editor-body_container']} ${'editor-block__mask'}`} style={containerStyles}>
+                {
+                  props.value.blocks.map((block, index) => {
+                    return <VisualEditorBlock
+                            block={block}
+                            config={props.config}
+                            editing={editing}
+                            key={index}
+                          />
+                  })
+                }
+              </div>
+            </div>
           </div>
         ) : (
           <div className={styles['visual-editor__preview']}>
             <div className={styles['editor-preview__edit']} onClick={methods.toggleEditing}><Button>编辑</Button></div>
-            <div className={styles['editor-preview__content']}>
-              预览区域
+            <div className={styles['preview-edit__warpper']}>
+              <div className={styles['editor-body_container']} style={containerStyles}>
+                {
+                  props.value.blocks.map((block, index) => {
+                    return <VisualEditorBlock
+                            block={block}
+                            config={props.config}
+                            key={index}
+                            editing={editing}
+                          />
+                  })
+                }
+              </div>
             </div>
           </div>
         )
