@@ -37,8 +37,34 @@ export interface VisualEditorComponent {
         size: {width?: string, height?: string},
     }) => JSX.Element,
     prievew: () => JSX.Element, // prievew 组件左侧预览函数
-
 }
+
+
+/**
+ * 创建一个 block 的组件数据
+ */
+export function createVisualBlock({
+    top,
+    left,
+    component
+}: {
+    top: number,
+    left: number,
+    component: VisualEditorComponent
+}): VisualEditorBlockData {
+    return {
+        adjustPosition: true,
+        componentKey: component.key,
+        top,
+        left,
+        width: 0,
+        height: 0,
+        focus: false,
+        zIndex: 0,
+        hasReasize: false
+    }
+}
+
 
 /**
  * 创建编辑器的预设内容

@@ -1,24 +1,40 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Button } from 'antd';
 import { MenuUnfoldOutlined } from '@ant-design/icons'
 
 import './style/common.scss';
 
 import styles from  './style/VisualEditor.module.scss';
-import { VisualEditorConfig, VisualEditorValue } from './editor.utils';
+import { createVisualBlock, VisualEditorBlockData, VisualEditorComponent, VisualEditorConfig, VisualEditorValue } from './editor.utils';
 import { VisualEditorBlock } from './EditorBlock';
+import { useCallbackRef } from './hook/useCallbackRef';
 
 export const VisualEditor: React.FC<{
   value: VisualEditorValue,
-  config: VisualEditorConfig
+  config: VisualEditorConfig,
+  onChange: (val: VisualEditorValue) => void, // 数据有变化出发外部函数
 }> = (props) => {
   // 当前是否处于编辑状态
   const [editing, setEditing] = useState(true);
   const methods = {
+    // 切换编辑和运行状态
     toggleEditing () {
       setEditing(!editing);
-    }
+    },
+    /**
+     * 更新 block 数据，触发视图重新渲染
+     * @param blocks 
+     */
+    updateBlocks: (blocks: VisualEditorBlockData[]) => {
+      props.onChange({
+        ...props.value,
+        blocks: [...blocks]
+      })
+    },
   }
+
+  // 画布容器 DOM
+  const containerRef = useRef({} as HTMLDivElement);
 
   const containerStyles = useMemo(() => {
     return {
@@ -26,6 +42,64 @@ export const VisualEditor: React.FC<{
       height: `${props.value.container.height}px`,
     }
   }, [props.value.container.height, props.value.container.width]);
+
+  //#region 左侧菜单拖拽到画布容器区域内
+  const menuDraggier = (() => {
+
+    const dragData = useRef({
+      dragComponent: null as null | VisualEditorComponent // 左侧组件列表去拖拽的当前组件
+    });
+
+    const container = {
+      dragenter: useCallbackRef((e: DragEvent) => {
+        e.dataTransfer!.dropEffect = 'move';
+      }),
+      dragover: useCallbackRef((e: DragEvent) => {
+        e.preventDefault();
+      }),
+      dragleave: useCallbackRef((e: DragEvent) => {
+        e.dataTransfer!.dropEffect = 'none';
+      }),
+      drop: useCallbackRef((e: DragEvent) => {
+        // 在容器画布添加组件
+        console.log('add')
+
+        methods.updateBlocks([
+          ...props.value.blocks,
+          createVisualBlock({
+            top: e.offsetY,
+            left: e.offsetX,
+            component: dragData.current.dragComponent!
+          })
+        ]);
+
+      }),
+    };
+
+    const block = {
+      dragstart: useCallbackRef((e: React.DragEvent<HTMLDivElement>,  dragComponent: VisualEditorComponent) => {
+        
+        containerRef.current.addEventListener('dragenter', container.dragenter);
+        containerRef.current.addEventListener('dragover', container.dragover);
+        containerRef.current.addEventListener('dragleave', container.dragleave);
+        containerRef.current.addEventListener('drop', container.drop);
+
+        dragData.current.dragComponent = dragComponent;
+
+      }),
+      dragend: useCallbackRef((e: React.DragEvent<HTMLDivElement>) => {
+
+        containerRef.current.removeEventListener('dragenter', container.dragenter);
+        containerRef.current.removeEventListener('dragover', container.dragover);
+        containerRef.current.removeEventListener('dragleave', container.dragleave);
+        containerRef.current.removeEventListener('drop', container.drop);
+      })
+    };
+
+    return block;
+  })();
+  //#endregion
+
   return (<>
       {
         editing ? (
@@ -37,7 +111,13 @@ export const VisualEditor: React.FC<{
               {
                 props.config.componentList.map((component, index) => {
                   return (
-                    <div key={component.key + '_' + index} className={styles['editor-menu__item']}>
+                    <div
+                      key={component.key + '_' + index}
+                      className={styles['editor-menu__item']}
+                      draggable
+                      onDragStart={e => menuDraggier.dragstart(e, component)}
+                      onDragEnd={menuDraggier.dragend}
+                    >
                       <span className={styles['menu-item__title']}>{component.label}</span>
                       <div className={styles['menu-item__content']}>
                         {component.prievew()}
@@ -50,7 +130,11 @@ export const VisualEditor: React.FC<{
             <div className={styles['visual-editor__head']}>header <button onClick={methods.toggleEditing}>运行</button></div>
             <div className={styles['visual-editor__operator']}>operator</div>
             <div className={`${styles['visual-editor__body']} ${styles['custom-bar__style']}`}>
-              <div className={`${styles['editor-body_container']} ${'editor-block__mask'}`} style={containerStyles}>
+              <div
+                className={`${styles['editor-body_container']} ${'editor-block__mask'}`}
+                style={containerStyles}
+                ref={containerRef}
+              >
                 {
                   props.value.blocks.map((block, index) => {
                     return <VisualEditorBlock
@@ -86,67 +170,3 @@ export const VisualEditor: React.FC<{
       }
   </>);
 };
-
-// import { useRef, useState } from 'react'
-// import { useCallbackRef } from './hook/useCallbackRef';
-
-// export const VisualEditor = () => {
-//   const [pos, setPos] = useState({
-//     top: 0,
-//     left: 0
-//   });
-
-//   const dragData = useRef({
-//     startTop: 0,   // 拖拽开始时，block 的 top 值
-//     startLeft: 0, // 拖拽开始时，block 的 left 值
-//     startX: 0,  // 拖拽开始时，鼠标的 left 值
-//     startY: 0  // 拖拽开始时，鼠标的 top 值
-//   });
-//   // 在拖拽开始的时候再去绑定相关的事件，这样比一开始就绑定这些事件好
-//   const moveDraggier = (()=> {
-//     const mouseMove = useCallbackRef((e: MouseEvent) => {
-//       const { startX, startY, startLeft, startTop } = dragData.current;
-//       const durX = e.clientX - startX;
-//       const durY = e.clientY - startY;
-//       setPos({
-//         top: startTop + durY,
-//         left: startLeft + durX
-//       });
-//       // console.log('使用自定义的 Hooks useCallbackRef 包裹，保证每次获取都是更新后的位置坐标', pos.left, pos.top);// 如果不使用自定义的的 Hooks useCallbackRef 包裹函数，这样移动过程中打印出的永远都没有更新鼠标位置，只拿到了鼠标按下时的位置坐标，有问题，因此使用自定义的的 Hooks useCallbackRef 包裹
-//     });    
-//     const mouseUp = useCallbackRef((e: MouseEvent) => {
-//       document.removeEventListener('mousemove', mouseMove);
-//       document.removeEventListener('mouseup', mouseUp);
-//     });    
-//     const mouseDown = useCallbackRef((e: React.MouseEvent<HTMLDivElement>) => {
-//       document.addEventListener('mousemove', mouseMove);
-//       document.addEventListener('mouseup', mouseUp);
-//       dragData.current = {
-//         startTop: pos.top,
-//         startLeft: pos.left,
-//         startX: e.clientX,
-//         startY: e.clientY
-//       }
-//     });
-//     return {
-//       mouseDown
-//     } 
-//   })();
-//   return (
-//     <div className="visual-editor__container">
-//       <div style={{
-//           height: '100px',
-//           width: '100px',
-//           background: 'red',
-//           display: 'inline-block',
-//           position: 'relative',
-//           top: `${pos.top}px`,
-//           left: `${pos.left}px`
-//         }}
-//         onMouseDown={moveDraggier.mouseDown}
-//       >
-
-//       </div>
-//     </div>
-//   )
-// }
