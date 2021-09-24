@@ -1,17 +1,21 @@
-
 import { useEffect, useMemo, useRef } from 'react';
+import classNames from 'classnames';
+
 import { VisualEditorBlockData, VisualEditorConfig } from './editor.utils';
 import { useUpdate } from './hook/useUpdate';
 
-import styles from './style/VisualEditorBlock.module.scss';
+import classModule from './style/VisualEditorBlock.module.scss';
 
 export const VisualEditorBlock: React.FC<{
     block: VisualEditorBlockData,
     config: VisualEditorConfig,
-    editing: boolean
+    onMouseDown?: (e: React.MouseEvent<HTMLDivElement>) => void,
+    editing?: boolean,
+    preview?: boolean,
 }> = (props) => {
     // 强制更新一次
     const { froceUpdate } = useUpdate();
+    const elRef = useRef({} as HTMLDivElement);
 
     const style = useMemo(() => {
         return {
@@ -21,6 +25,12 @@ export const VisualEditorBlock: React.FC<{
         }
     }, [props.block.top, props.block.left]);
 
+    const classes = useMemo(() => classNames([
+        classModule['visual-editor__block'],
+        { [classModule['editor-block__mask']]: props.preview ? false : props.editing },
+        { [classModule['editor-block__active']]: props.preview ? false : (props.editing ? props.block.focus : false) }])
+    , [props.block.focus, props.editing, props.preview])
+
     const component = props.config.componentMap[props.block.componentKey];
 
     let render: any;
@@ -28,7 +38,6 @@ export const VisualEditorBlock: React.FC<{
         render = component.render({} as any);
     }
 
-    const elRef = useRef({} as HTMLDivElement);
     useEffect(() => {
         if (props.block.adjustPosition) {
             // 设置是首次拖到容器中是否调整位置居于鼠标点
@@ -48,12 +57,13 @@ export const VisualEditorBlock: React.FC<{
     }, []);
 
     return (() => {
-        const mask = props.editing ? 'mask': '';
+        
         return (
             <div
-                className={`${styles['visual-editor__block']} ${mask}`.trim()}
+                className={classes}
                 style={style}
                 ref={elRef}
+                onMouseDown={props.onMouseDown}
             >
                 {render}
             </div>

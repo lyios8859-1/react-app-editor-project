@@ -10,7 +10,7 @@ export interface VisualEditorBlockData {
     adjustPosition: boolean, // 添加组件到容器中时是否需要调整位置
     focus: boolean, // 组件是否是选中状态
     zIndex: number,   // block 组件元素的 z-index style 属性
-    hasReasize: boolean, // block 组件元素是否曾调整国大小
+    hasReasize: boolean, // block 组件元素是否调整大小
     props?: Record<string, any> // block 组件元素右侧属性配置信息
     model?: Record<string, any> // 组件元素右侧自定义配置属性信息（绑定值）
     slotName?: string   // 组件标识
