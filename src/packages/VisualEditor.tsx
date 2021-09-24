@@ -171,9 +171,9 @@ export const VisualEditor: React.FC<{
       
       setSelectIndex(block.focus ? index : -1);
       // 使用延时器保证，数据时渲染后的正确数据，否则有 BUG
-      // setTimeout(() => {
-      //   blockDraggier.mousedown(ev, block);
-      // });
+      setTimeout(() => {
+        blockDraggier.mousedown(e, block);
+      });
     };
     const mousedownContainer = (e: React.MouseEvent<HTMLDivElement>) => {
       e.stopPropagation();
@@ -196,6 +196,160 @@ export const VisualEditor: React.FC<{
     return {
       block: mousedownBlock,
       container: mousedownContainer
+    }
+  })();
+  //#endregion
+
+  //#region 画布容器组件的拖拽
+  const blockDraggier = (() => {
+
+    const [mark, setMark] = useState({x: null as null | number, y: null as null | number});
+
+    // 存储拖拽时的数据
+    const dragData = useRef({
+      startX: 0, // 鼠标拖拽开始的，鼠标的横坐标
+      startY: 0, // 鼠标拖拽开始的，鼠标的纵坐标
+      startLeft: 0, // 鼠标拖拽开始的，拖拽的 block 横坐标
+      startTop: 0, // 鼠标拖拽开始的，拖拽的 block 纵坐标
+      startPosArray: [] as { top: number, left: number }[], // 鼠标拖拽开始的, 所有选中的 block 元素的横纵坐标值
+
+      shiftKey: false, // 当前是否按住了 shift 键
+      moveX: 0, // 拖拽过程中的时候, 鼠标的 left 值
+      moveY: 0, // 拖拽过程中的时候, 鼠标的 top 值
+      containerBar: {
+        startScrollTop: 0, // 拖拽开始的时候, scrollTop 值
+        moveScrollTop: 0, // 拖拽过程中的时候, scrollTop 值
+      },
+      
+      dragging: false, // 当前是否属于拖拽状态
+      markLines: { // 拖拽元素时，计算当前未选中的数据中，与拖拽元素之间参考辅助线的显示位置
+        x: [] as {left: number, showLeft: number}[],
+        y: [] as {top: number, showTop: number}[]
+      }
+    });
+    const moveHandler = useCallbackRef(() => {
+      if (!dragData.current.dragging) {
+        dragData.current.dragging = true;
+        // dragstart.emit();
+      }
+      
+      let {
+        startX, 
+        startY, 
+        startPosArray, 
+        moveX,
+        moveY,
+        containerBar,
+        startLeft, 
+        startTop, 
+        markLines,
+        shiftKey
+      } = dragData.current;
+
+      moveY = moveY + (containerBar.moveScrollTop - containerBar.startScrollTop);
+
+      // 移动时, 同时按住 shift 键，只在一个方向移动
+      if (shiftKey) {
+        const n = 12; // 预定差值
+        if (Math.abs(moveX - startX) > Math.abs(moveY - startY) + n) {
+          moveY = startY;
+        } else {
+          moveX = startX;
+        }
+      }
+
+      //#region 参考线处理
+      const nowMark = {
+        mark: {
+          x: null as null | number,
+          y: null as null | number
+        },
+        top: startTop + moveY - startY,
+        left: startLeft + moveX - startX
+      };
+
+      for (let i = 0; i < markLines.y.length; i++) {
+        const { top, showTop } = markLines.y[i];
+        if (Math.abs(nowMark.top - top) < 5) {
+          moveY = top + startY - startTop;
+          nowMark.mark.y = showTop;
+        }
+      }
+
+      for (let i = 0; i < markLines.x.length; i++) {
+        const { left, showLeft } = markLines.x[i];
+        if (Math.abs(nowMark.left - left) < 5) {
+          moveX = left + startX - startLeft;
+          nowMark.mark.x = showLeft;
+        }
+      }
+      //#endregion
+
+      const durX = moveX - startX;
+      const durY = moveY - startY;
+
+      focusData.focus.forEach((block, index) => {
+        const { left, top } = startPosArray[index];
+        block.left = left + durX;
+        block.top = top + durY;
+      });
+      methods.updateBlocks(props.value.blocks);
+
+      // 修正参考线的位置
+      setMark(nowMark.mark);
+    });
+
+    const scrollHandler = useCallbackRef((e: Event) => {
+      dragData.current.containerBar.moveScrollTop = (e.target as HTMLDivElement).scrollTop;
+      moveHandler();
+    }); 
+
+    const mousemove = useCallbackRef((e: MouseEvent) => {
+      dragData.current.moveX = e.clientX;
+      dragData.current.moveY = e.clientY;
+      moveHandler();
+    });
+    const mouseup = useCallbackRef((e: MouseEvent) => {
+      document.removeEventListener('mousemove', mousemove);
+      document.removeEventListener('mouseup', mouseup);
+      // 取消参考辅助线
+      setMark({x: null, y: null});
+
+      if (dragData.current.dragging) {
+        dragData.current.dragging = false;
+        // dragend.emit();
+      }
+    });
+    const mousedown = useCallbackRef((e: React.MouseEvent<HTMLDivElement>, block: VisualEditorBlockData) => {
+      
+      document.addEventListener('mousemove', mousemove);
+      document.addEventListener('mouseup', mouseup);
+      
+      dragData.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        startLeft: block.left,
+        startTop: block.top,
+        startPosArray: focusData.focus.map(({ top, left }) => ({ top, left })),
+        moveX: e.clientX,
+        moveY: e.clientY,
+        shiftKey: e.shiftKey,
+        containerBar: {
+          startScrollTop: 0,
+          moveScrollTop: 0,
+        },
+        dragging: false,
+        markLines: (() => {
+          const x = [{ left: 0, showLeft: 0}];
+          const y = [{ top: 0, showTop: 0}];
+          // 参考线处理 TODO...
+          return { x, y }
+        })()
+      }
+    });
+    return {
+      mousedown,
+      mark
     }
   })();
   //#endregion
