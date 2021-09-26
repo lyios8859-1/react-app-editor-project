@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { KeyboardCode } from "./keyboard-code";
 
 // command 的 execute 执行完之后，需要返回 undo、redo。execute 执行后会立即返回 redo，后续撤销的时候会执行 undo，重做的时候会执行 redo
 interface CommandExecute {
@@ -73,13 +74,62 @@ export function useCommander() {
         });
     }, []);
 
+    // 快捷键
+    const [keyboardEvent] = useState(() => {
+        const onKeydown = (ev: KeyboardEvent) => {
+            // 对于容器是否在空白区域或时操作某个组件的命令区分操作，比如空白区域时全选或全中所有的组件组件，在操作某个输入框组件时，全选就只会选中输入框中的文字
+            if (document.activeElement !== document.body) {
+                return;
+            }
+            const { keyCode, shiftKey, altKey, ctrlKey, metaKey } = ev;
+
+            let keyString: string[] = [];
+
+            if (ctrlKey || metaKey) {
+                keyString.push('ctrl');
+            }
+            if (shiftKey) {
+                keyString.push('shift');
+            }
+            if (altKey) {
+                keyString.push('alt');
+            }
+            keyString.push(KeyboardCode[keyCode]);
+
+            // 快捷键格式 'ctrl+alt+s'
+            const keyNames = keyString.join('+');
+
+            state.commandList.forEach(({ current: { keyboard, name } }) => {
+                if (!keyboard) return;
+
+                const keys = Array.isArray(keyboard) ? keyboard : [keyboard];
+
+                if (keys.indexOf(keyNames) > -1) {
+                    state.commands[name](); // 执行对应的命令的方法 AAAAAAA
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                }
+            })
+        }
+
+        const init = () => {
+            window.addEventListener('keydown', onKeydown, true);
+            return () => {
+                window.removeEventListener('keydown', onKeydown, true)
+            }
+        }
+        return {
+            init
+        }
+    });
+
     // 初始化注册命令（useRegistry）时的所有的 command 的 init 的方法
     const useInit = useCallback(() => {
         useState(() => {
             state.commandList.forEach(command => {
                 command.current.init && state.destroyList.push(command.current.init());
             });
-            // state.destroyList.push(keyboardEvent.init());
+            state.destroyList.push(keyboardEvent.init());
         });
 
         // 注册内置的撤回命令（撤回命令执行的结果是不需要进入命令队列的）
