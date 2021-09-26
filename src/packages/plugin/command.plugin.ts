@@ -16,6 +16,7 @@ interface Command {
 }
 
 export function useCommander() {
+
     const [state] = useState(() => ({
         current: -1, // 当前命令队列中，最后执行的命令返回的 CommandExecute 对象
         queue: [] as CommandExecute[], // 命令队列容器
@@ -72,9 +73,51 @@ export function useCommander() {
         });
     }, []);
 
-
+    // 初始化注册命令（useRegistry）时的所有的 command 的 init 的方法
     const useInit = useCallback(() => {
+        useState(() => {
+            state.commandList.forEach(command => {
+                command.current.init && state.destroyList.push(command.current.init());
+            });
+            // state.destroyList.push(keyboardEvent.init());
+        });
 
+        // 注册内置的撤回命令（撤回命令执行的结果是不需要进入命令队列的）
+        useRegistry({
+            name: 'undo',
+            keyboard: 'ctrl+z',
+            followQueue: false, // 标识不需要进入命令队列
+            execute: () => {
+                return {
+                    redo: () => {
+                        if (state.current === -1) return;
+                        const queueItem = state.queue[state.current];
+                        if (queueItem) {
+                            queueItem.undo && queueItem.undo();
+                            state.current--;
+                        }
+                    }
+                }
+            }
+        });
+
+        // 注册内置的重做命令（重做命令执行结果是不需要进入命令队列的）
+        useRegistry({
+            name: 'redo',
+            keyboard: ['ctrl+y', 'ctrl+shift+z'],
+            followQueue: false,
+            execute: () => {
+                return {
+                    redo: () => {
+                        const queueItem = state.queue[state.current + 1];
+                        if (queueItem) {
+                            queueItem.redo();
+                            state.current++;
+                        }
+                    }
+                }
+            }
+        });
     }, []);
 
     return {

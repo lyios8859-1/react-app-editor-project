@@ -56,7 +56,8 @@ export function useVisualCommand({
         }
     })
 
-
+     // 初始内置的命令 undo，redo
+    commander.useInit(); // 在底部调用
     return {
         delete: () => commander.state.commands.delete(),
         clear: () => commander.state.commands.clear(),

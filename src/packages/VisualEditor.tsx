@@ -8,6 +8,7 @@ import classModule from './style/VisualEditor.module.scss';
 import { createVisualBlock, VisualEditorBlockData, VisualEditorComponent, VisualEditorConfig, VisualEditorValue } from './editor.utils';
 import { VisualEditorBlock } from './EditorBlock';
 import { useCallbackRef } from './hook/useCallbackRef';
+import { useVisualCommand } from './editor.command';
 
 export const VisualEditor: React.FC<{
   value: VisualEditorValue,
@@ -354,7 +355,12 @@ export const VisualEditor: React.FC<{
     }
   })();
   //#endregion
-
+// 命令管理对象
+const commander = useVisualCommand({
+  value: props.value,
+  focusData,
+  updateBlocks: methods.updateBlocks
+});
 
   //#region 功能操作栏按钮组
   const buttons: {
@@ -368,6 +374,7 @@ export const VisualEditor: React.FC<{
         icon: 'icon-back',
         handler: () => {
           console.log('撤销')
+          commander.undo();
         },
         tip: 'ctrl+z'
       },
@@ -376,8 +383,26 @@ export const VisualEditor: React.FC<{
         icon: 'icon-forward',
         handler: () => {
           console.log('重做')
+          commander.redo();
         },
         tip: 'ctrl+y, ctrl+shift+z'
+      },
+      {
+        label: '清空',
+        icon: 'icon-reset',
+        handler: () => {
+          console.log('清空')
+          commander.clear();
+        }
+      },
+      {
+        label: '删除',
+        icon: 'icon-delete',
+        handler: () => {
+          console.log('删除')
+          commander.delete();
+        },
+        tip: 'ctrl+d, backspace, delete'
       },
       {
         label: '导入',
@@ -408,20 +433,6 @@ export const VisualEditor: React.FC<{
           console.log('置底')
         },
         tip: 'ctrl+down'
-      },
-      {
-        label: '删除',
-        icon: 'icon-delete',
-        handler: () => {
-          console.log('删除')
-        }, tip: 'ctrl+d, backspace, delete'
-      },
-      {
-        label: '清空',
-        icon: 'icon-reset',
-        handler: () => {
-          console.log('清空')
-        }
       },
       {
         label: () => preview ? '编辑' : '预览',
@@ -474,8 +485,6 @@ export const VisualEditor: React.FC<{
               }
             </div>
             <div className={classModule['visual-editor__head']}>
-              {/* <button onClick={innerMethods.togglePreview}>{preview ? '编辑' : '预览'}</button> 
-              <button onClick={innerMethods.toggleEditing}>运行</button> */}
               {
                 buttons.map((btn, index) => {
                   const label = typeof btn.label === "function" ? btn.label() : btn.label
