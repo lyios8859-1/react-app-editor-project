@@ -1,8 +1,9 @@
 import { useMemo, useRef, useState } from 'react';
-import { Button } from 'antd';
+import { Button, Tooltip } from 'antd';
 import { MenuUnfoldOutlined } from '@ant-design/icons'
 
-import classModule from  './style/VisualEditor.module.scss';
+import '../asset/font/iconfont.css';
+import classModule from './style/VisualEditor.module.scss';
 
 import { createVisualBlock, VisualEditorBlockData, VisualEditorComponent, VisualEditorConfig, VisualEditorValue } from './editor.utils';
 import { VisualEditorBlock } from './EditorBlock';
@@ -354,6 +355,97 @@ export const VisualEditor: React.FC<{
   })();
   //#endregion
 
+
+  //#region 功能操作栏按钮组
+  const buttons: {
+    label: string | (() => string),
+    icon: string | (() => string),
+    tip?: string | (() => string),
+    handler: () => void,
+  }[] = [
+      {
+        label: '撤销',
+        icon: 'icon-back',
+        handler: () => {
+          console.log('撤销')
+        },
+        tip: 'ctrl+z'
+      },
+      {
+        label: '重做',
+        icon: 'icon-forward',
+        handler: () => {
+          console.log('重做')
+        },
+        tip: 'ctrl+y, ctrl+shift+z'
+      },
+      {
+        label: '导入',
+        icon: 'icon-import',
+        handler: async () => {
+          console.log('导入')
+        }
+      },
+      {
+        label: '导出',
+        icon: 'icon-export',
+        handler: () => {
+          console.log('导出')
+        }
+      },
+      {
+        label: '置顶',
+        icon: 'icon-place-top',
+        handler: () => {
+          console.log('置顶')
+        },
+        tip: 'ctrl+up'
+      },
+      {
+        label: '置底',
+        icon: 'icon-place-bottom',
+        handler: () => {
+          console.log('置底')
+        },
+        tip: 'ctrl+down'
+      },
+      {
+        label: '删除',
+        icon: 'icon-delete',
+        handler: () => {
+          console.log('删除')
+        }, tip: 'ctrl+d, backspace, delete'
+      },
+      {
+        label: '清空',
+        icon: 'icon-reset',
+        handler: () => {
+          console.log('清空')
+        }
+      },
+      {
+        label: () => preview ? '编辑' : '预览',
+        icon: () => preview ? 'icon-edit' : 'icon-browse',
+        handler: () => {
+          if (!preview && !editing) {
+            methods.clearFocus();
+          }
+          innerMethods.togglePreview();
+        },
+      },
+      {
+        label: '关闭',
+        icon: 'icon-close',
+        handler: () => {
+          if (!editing) {
+            methods.clearFocus();
+          }
+          innerMethods.toggleEditing();
+        }
+      }
+    ]
+  //#endregion
+
   return (<>
       {
         editing ? (
@@ -374,7 +466,7 @@ export const VisualEditor: React.FC<{
                     >
                       <span className={classModule['menu-item__title']}>{component.label}</span>
                       <div className={classModule['menu-item__content']}>
-                        {component.prievew()}
+                        {component.preview()}
                       </div>
                     </div>
                   )
@@ -382,8 +474,21 @@ export const VisualEditor: React.FC<{
               }
             </div>
             <div className={classModule['visual-editor__head']}>
-              <button onClick={innerMethods.toggleEditing}>运行</button>
-              <button onClick={innerMethods.togglePreview}>{preview ? '编辑' : '预览'}</button>
+              {/* <button onClick={innerMethods.togglePreview}>{preview ? '编辑' : '预览'}</button> 
+              <button onClick={innerMethods.toggleEditing}>运行</button> */}
+              {
+                buttons.map((btn, index) => {
+                  const label = typeof btn.label === "function" ? btn.label() : btn.label
+                  const icon = typeof btn.icon === "function" ? btn.icon() : btn.icon
+                  const content = (<div key={index} className={classModule['editor-head__button']} onClick={btn.handler}>
+                    <i className={`iconfont ${icon}`} />
+                    <span>{label}</span>
+                  </div>)
+                  return !btn.tip ? content : <Tooltip title={btn.tip} placement="bottom" key={index}>
+                    {content}
+                  </Tooltip>
+                })
+              }
             </div>
             <div className={classModule['visual-editor__operator']}>operator</div>
             <div className={`${classModule['visual-editor__body']} ${classModule['custom-bar__style']}`}>

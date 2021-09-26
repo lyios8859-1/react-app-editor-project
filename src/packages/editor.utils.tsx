@@ -36,7 +36,7 @@ export interface VisualEditorComponent {
         block: VisualEditorBlockData,
         size: {width?: string, height?: string},
     }) => JSX.Element,
-    prievew: () => JSX.Element, // prievew 组件左侧预览函数
+    preview: () => JSX.Element, // preview 组件左侧预览函数
 }
 
 

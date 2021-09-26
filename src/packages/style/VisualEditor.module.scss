@@ -72,6 +72,45 @@
       height: $headSize;;
       background-color: #fff;
       border-bottom: 1px solid $ibc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .editor-head__button {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        background-color: rgba(black, 0.3);
+        color: #fff;
+        padding: 3px 10px;
+        transition: all linear 0.1s;
+        cursor: pointer;
+        user-select: none;
+        & > span {
+          font-size: 12px;
+        }
+        &:not(:last-child) {
+          &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: rgba(white, 0.4);
+          }
+        }
+        &:hover {
+          background-color: #fff;
+          color: $primary;
+          box-shadow: 0px 0px 0px 0.5px $primary;
+        }
+        &:active {
+          background-color: mix($primary, white, 10%);
+        }
+      }
     }
     &.visual-editor__operator {
       top: 0;

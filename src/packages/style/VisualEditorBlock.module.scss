@@ -14,6 +14,7 @@
     width: auto;
     height: auto;
     box-sizing: border-box;
+    user-select: none;
     &.editor-block__mask {
         &::after {
             @include pos();
