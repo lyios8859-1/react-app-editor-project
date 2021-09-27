@@ -9,6 +9,7 @@ import { createVisualBlock, VisualEditorBlockData, VisualEditorComponent, Visual
 import { VisualEditorBlock } from './EditorBlock';
 import { useCallbackRef } from './hook/useCallbackRef';
 import { useVisualCommand } from './editor.command';
+import { createEvent } from './plugin/event';
 
 export const VisualEditor: React.FC<{
   value: VisualEditorValue,
@@ -29,6 +30,10 @@ export const VisualEditor: React.FC<{
       setPreview(!preview);
     },
   }
+
+  // 拖拽开始和结束的事件监听
+  const [dragstart] = useState(() => createEvent());
+  const [dragend] = useState(() => createEvent());
 
   // 当前选中 block 组件元素的索引
   const [selectIndex, setSelectIndex] = useState(-1); // 默认 -1 没选中
@@ -109,7 +114,7 @@ export const VisualEditor: React.FC<{
       }),
       drop: useCallbackRef((e: DragEvent) => {
         // 在容器画布添加组件
-        console.log('add')
+        // console.log('add')
 
         methods.updateBlocks([
           ...props.value.blocks,
@@ -120,6 +125,11 @@ export const VisualEditor: React.FC<{
           })
         ]);
 
+        const t = setTimeout(() => {
+          // 拖拽结束后，等页面渲染完毕，才执行，否则拖拽后就不会在页面正常显示
+          dragend.emit(); // 触发事件
+          clearTimeout(t);
+        });
       }),
     };
 
@@ -132,6 +142,8 @@ export const VisualEditor: React.FC<{
         containerRef.current.addEventListener('drop', container.drop);
 
         dragData.current.dragComponent = dragComponent;
+        
+        dragstart.emit(); // 触发事件
 
       }),
       dragend: useCallbackRef((e: React.DragEvent<HTMLDivElement>) => {
@@ -355,12 +367,15 @@ export const VisualEditor: React.FC<{
     }
   })();
   //#endregion
-// 命令管理对象
-const commander = useVisualCommand({
-  value: props.value,
-  focusData,
-  updateBlocks: methods.updateBlocks
-});
+
+  // 命令管理对象
+  const commander = useVisualCommand({
+    value: props.value,
+    focusData,
+    updateBlocks: methods.updateBlocks,
+    dragstart,
+    dragend
+  });
 
   //#region 功能操作栏按钮组
   const buttons: {
@@ -373,7 +388,7 @@ const commander = useVisualCommand({
         label: '撤销',
         icon: 'icon-back',
         handler: () => {
-          console.log('撤销')
+          // console.log('撤销')
           commander.undo();
         },
         tip: 'ctrl+z'
@@ -382,7 +397,7 @@ const commander = useVisualCommand({
         label: '重做',
         icon: 'icon-forward',
         handler: () => {
-          console.log('重做')
+          // console.log('重做')
           commander.redo();
         },
         tip: 'ctrl+y, ctrl+shift+z'
@@ -391,7 +406,7 @@ const commander = useVisualCommand({
         label: '清空',
         icon: 'icon-reset',
         handler: () => {
-          console.log('清空')
+          // console.log('清空')
           commander.clear();
         }
       },
@@ -399,7 +414,7 @@ const commander = useVisualCommand({
         label: '删除',
         icon: 'icon-delete',
         handler: () => {
-          console.log('删除')
+          // console.log('删除')
           commander.delete();
         },
         tip: 'ctrl+d, backspace, delete'
