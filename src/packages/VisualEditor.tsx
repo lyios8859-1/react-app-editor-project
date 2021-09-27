@@ -159,7 +159,6 @@ export const VisualEditor: React.FC<{
   })();
   //#endregion
 
-
   //#region 画布容器中 block 组件选中
   const focusHandler = (() => {
     const mousedownBlock = (e: React.MouseEvent<HTMLDivElement>, block: VisualEditorBlockData, index: number) => {
@@ -244,7 +243,7 @@ export const VisualEditor: React.FC<{
     const moveHandler = useCallbackRef(() => {
       if (!dragData.current.dragging) {
         dragData.current.dragging = true;
-        // dragstart.emit();
+        dragstart.emit(); // 拖拽过程中派发事件
       }
       
       let {
@@ -331,7 +330,7 @@ export const VisualEditor: React.FC<{
 
       if (dragData.current.dragging) {
         dragData.current.dragging = false;
-        // dragend.emit();
+        dragend.emit(); // 拖拽过程中，鼠标抬起后才派发事件
       }
     });
     const mousedown = useCallbackRef((e: React.MouseEvent<HTMLDivElement>, block: VisualEditorBlockData) => {
@@ -361,6 +360,7 @@ export const VisualEditor: React.FC<{
         })()
       }
     });
+
     return {
       mousedown,
       mark
