@@ -142,6 +142,21 @@ export function useVisualCommand({
         }
     });
 
+    // 注册全选快捷键命令
+    commander.useRegistry({
+        name: 'selectAll',
+        keyboard: ['ctrl+a'],
+        followQueue: false,
+        execute: () => {
+            return {
+                redo: () => {
+                    value.blocks.forEach(block => block.focus = true);
+                    updateBlocks(value.blocks);
+                }
+            }
+        }
+    });
+
     // 注册置顶命令
     commander.useRegistry({
         name: 'placeBottom',
