@@ -21,9 +21,10 @@ export const VisualEditorBlock: React.FC<{
         return {
             top: `${props.block.top}px`,
             left: `${props.block.left}px`,
+            zIndex: props.block.zIndex,
             opacity: props.block.adjustPosition ? 0 : "", // 解决调整拖拽结束时居中时组件闪动 BUG
         }
-    }, [props.block.top, props.block.left]);
+    }, [props.block.top, props.block.left, props.block.zIndex]);
 
     const classes = useMemo(() => classNames([
         classModule['visual-editor__block'],

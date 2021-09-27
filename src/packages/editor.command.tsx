@@ -110,6 +110,77 @@ export function useVisualCommand({
         });
     }
 
+    // 注册置顶命令
+    commander.useRegistry({
+        name: 'placeTop',
+        keyboard: 'ctrl+up',
+        execute: () => {
+
+            const data = {
+                before: (() => deepcopy(value.blocks))(),
+                after: (() => deepcopy(() => {
+                    const { focus, unFocus } = focusData;
+                    // 计算出 focus 选中的最大的 zIndex 值，unFocus 未选中的最小的 zIndex 值，计算它们的差值就是当前元素置顶的 zIndex 值
+                    const maxUnFocusIndex = unFocus.reduce((prev, item) => {
+                        return Math.max(prev, item.zIndex);
+                    }, -Infinity);
+                    const minFocusIndex = focus.reduce((prev, item) => {
+                        return Math.min(prev, item.zIndex);
+                    }, Infinity);
+                    let dur = maxUnFocusIndex - minFocusIndex + 1;
+                    if (dur >= 0) {
+                        dur++;
+                        focus.forEach(block => block.zIndex = block.zIndex + dur);
+                    }
+                    return value.blocks;
+                }))()()
+            };
+            return {
+                redo: () => updateBlocks(deepcopy(data.after) || []),
+                undo: () => updateBlocks(deepcopy(data.before))
+            };
+        }
+    });
+
+    // 注册置顶命令
+    commander.useRegistry({
+        name: 'placeBottom',
+        keyboard: 'ctrl+down',
+        execute: () => {
+
+            const data = {
+                before: (() => deepcopy(value.blocks))(),
+                after: (() => deepcopy(() => {
+                    const { focus, unFocus } = focusData;
+                    // 计算出 focus 选中的最大的 zIndex 值，unFocus 未选中的最小的 zIndex 值，计算它们的差值就是当前元素置顶的 zIndex 值
+                    const minUnFocusIndex = unFocus.reduce((prev, item) => {
+                        return Math.min(prev, item.zIndex);
+                    }, Infinity);
+                    const maxFocusIndex = focus.reduce((prev, item) => {
+                        return Math.max(prev, item.zIndex);
+                    }, -Infinity);
+                    const minFocusIndex = focus.reduce((prev, item) => {
+                        return Math.min(prev, item.zIndex);
+                    }, Infinity);
+                    let dur = maxFocusIndex - minUnFocusIndex + 1;
+                    if (dur >= 0) {
+                        dur++;
+                        focus.forEach(block => block.zIndex = block.zIndex - dur);
+                        if (minFocusIndex - dur < 0) {
+                            dur = dur - minFocusIndex;
+                            value.blocks.forEach(block => block.zIndex = block.zIndex + dur);
+                        }
+                    }
+                    return value.blocks;
+                }))()()
+            };
+
+            return {
+                redo: () => updateBlocks(deepcopy(data.after)),
+                undo: () => updateBlocks(deepcopy(data.before))
+            };
+        }
+    });
     // 初始内置的命令 undo，redo
     commander.useInit(); // 在底部调用
     return {
@@ -117,5 +188,7 @@ export function useVisualCommand({
         clear: () => commander.state.commands.clear(),
         undo: () => commander.state.commands.undo(),
         redo: () => commander.state.commands.redo(),
+        placeBottom: () => commander.state.commands.placeBottom(),
+        placeTop: () => commander.state.commands.placeTop(),
     }
 }

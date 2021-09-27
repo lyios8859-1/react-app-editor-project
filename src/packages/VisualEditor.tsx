@@ -420,6 +420,25 @@ export const VisualEditor: React.FC<{
         tip: 'ctrl+d, backspace, delete'
       },
       {
+        label: '置顶',
+        icon: 'icon-place-top',
+        handler: () => {
+          // console.log('置顶')
+          commander.placeTop();
+        },
+        tip: 'ctrl+up'
+      },
+      {
+        label: '置底',
+        icon: 'icon-place-bottom',
+        handler: () => {
+          // console.log('置底')
+          commander.placeBottom();
+
+        },
+        tip: 'ctrl+down'
+      },
+      {
         label: '导入',
         icon: 'icon-import',
         handler: async () => {
@@ -432,22 +451,6 @@ export const VisualEditor: React.FC<{
         handler: () => {
           console.log('导出')
         }
-      },
-      {
-        label: '置顶',
-        icon: 'icon-place-top',
-        handler: () => {
-          console.log('置顶')
-        },
-        tip: 'ctrl+up'
-      },
-      {
-        label: '置底',
-        icon: 'icon-place-bottom',
-        handler: () => {
-          console.log('置底')
-        },
-        tip: 'ctrl+down'
       },
       {
         label: () => preview ? '编辑' : '预览',
