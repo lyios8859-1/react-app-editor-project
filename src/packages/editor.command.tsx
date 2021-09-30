@@ -212,7 +212,6 @@ export function useVisualCommand({
                 undo: () => updateValue(data.before)
             }
         }
-
     });
 
 
