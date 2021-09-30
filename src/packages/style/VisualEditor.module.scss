@@ -138,6 +138,10 @@
   position: relative;
   margin: 0 auto;
   background-color: #fff;
+  box-sizing: border-box;
+  &.edit-container__border {
+    border: 1px dashed $primary;
+  }
 }
 
 .visual-editor__preview {

@@ -9,6 +9,7 @@ export function useVisualCommand({
     focusData,
     value,
     updateBlocks,
+    updateValue,
     dragend,
     dragstart
 }: {
@@ -18,6 +19,7 @@ export function useVisualCommand({
     },
     value: VisualEditorValue,
     updateBlocks: (blocks: VisualEditorBlockData[]) => void,
+    updateValue: (value: VisualEditorValue) => void,
     dragstart: {
         on: (cb: () => void) => void,
         off: (cb: () => void) => void
@@ -196,6 +198,24 @@ export function useVisualCommand({
             };
         }
     });
+
+    // 注册导入数据时，更新数据命令
+    commander.useRegistry({
+        name: 'updateValue',
+        execute: (newModelValue: VisualEditorValue) => {
+            const data = {
+                before: deepcopy(value),
+                after: deepcopy(newModelValue)
+            };
+            return {
+                redo: () => updateValue(data.after),
+                undo: () => updateValue(data.before)
+            }
+        }
+
+    });
+
+
     // 初始内置的命令 undo，redo
     commander.useInit(); // 在底部调用
     return {
@@ -205,5 +225,6 @@ export function useVisualCommand({
         redo: () => commander.state.commands.redo(),
         placeBottom: () => commander.state.commands.placeBottom(),
         placeTop: () => commander.state.commands.placeTop(),
+        updateValue: (newModelValue: VisualEditorValue) => commander.state.commands.updateValue(newModelValue),
     }
 }

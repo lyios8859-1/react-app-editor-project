@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Button, Tooltip } from 'antd';
+import { Button, notification, Tooltip } from 'antd';
 import { MenuUnfoldOutlined } from '@ant-design/icons'
 
 import '../asset/font/iconfont.css';
@@ -10,6 +10,7 @@ import { VisualEditorBlock } from './EditorBlock';
 import { useCallbackRef } from './hook/useCallbackRef';
 import { useVisualCommand } from './editor.command';
 import { createEvent } from './plugin/event';
+import { $$dialog } from './service/dialog/$$dialog';
 
 export const VisualEditor: React.FC<{
   value: VisualEditorValue,
@@ -50,6 +51,13 @@ export const VisualEditor: React.FC<{
         ...props.value,
         blocks: [...blocks]
       })
+    },
+    /**
+     * 更新整个画布容器的数据（所有 block 数据）
+     * @param value 
+     */
+    updateValue: (value: VisualEditorValue) => {
+      props.onChange({...value});
     },
     /**
      * 清空选中的数据
@@ -374,7 +382,8 @@ export const VisualEditor: React.FC<{
     focusData,
     updateBlocks: methods.updateBlocks,
     dragstart,
-    dragend
+    dragend,
+    updateValue: methods.updateValue
   });
 
   //#region 功能操作栏按钮组
@@ -442,7 +451,19 @@ export const VisualEditor: React.FC<{
         label: '导入',
         icon: 'icon-import',
         handler: async () => {
-          console.log('导入')
+          console.log('导入');
+          const text = await $$dialog.textarea('', { title: '请输入导入的JSON字符串' });
+          try {
+            const data = JSON.parse(text || '');
+            commander.updateValue(data);
+          } catch (e) {
+            console.error(e)
+            notification.open({
+              type: 'error',
+              message: '导入失败！',
+              description: '导入的数据格式不正常，请检查！'
+            })
+          }
         }
       },
       {
@@ -450,6 +471,7 @@ export const VisualEditor: React.FC<{
         icon: 'icon-export',
         handler: () => {
           console.log('导出')
+          $$dialog.textarea(JSON.stringify(props.value), {editReadonly: true, title: '导出的JSON数据'});
         }
       },
       {
@@ -520,7 +542,7 @@ export const VisualEditor: React.FC<{
             <div className={classModule['visual-editor__operator']}>operator</div>
             <div className={`${classModule['visual-editor__body']} ${classModule['custom-bar__style']}`}>
               <div
-                className={classModule['editor-body_container']}
+                className={`${classModule['editor-body_container']} ${editing && !preview && classModule['edit-container__border']}`}
                 style={containerStyles}
                 ref={containerRef}
                 onMouseDown={focusHandler.container}
