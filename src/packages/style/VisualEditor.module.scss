@@ -22,6 +22,14 @@
   .visual-editor__operator,
   .visual-editor__body {
     position: absolute;
+    top: $headSize;
+    left: $menuSize;
+    right: $operatorSize;
+    bottom: 0;
+    box-sizing: border-box;
+    padding: 2px;
+    background-color: #f6f6f6;
+    overflow: auto;
     &.visual-editor__menu {
       top: 0;
       left: 0;
@@ -121,16 +129,6 @@
       box-sizing: border-box;
       border-left: 1px solid $ibc;
     }
-    &.visual-editor__body {
-      top: $headSize;
-      left: $menuSize;
-      right: $operatorSize;
-      bottom: 0;
-      box-sizing: border-box;
-      padding: 2px;
-      background-color: #f6f6f6;
-      overflow: auto;
-    }
   }
 }
 
@@ -141,6 +139,22 @@
   box-sizing: border-box;
   &.edit-container__border {
     border: 1px dashed $primary;
+  }
+  .editor-mark-x,
+  .editor-mark-y {
+    position: absolute;
+    &.editor-mark-x {
+      top: 0;
+      bottom: 0;
+      left: 5px;
+      border-left: 1px dashed $primary;
+    }
+    &.editor-mark-y {
+      left: 0;
+      right: 0;
+      top: 5px;
+      border-top: 1px dashed $primary;
+    }
   }
 }
 

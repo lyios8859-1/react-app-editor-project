@@ -200,6 +200,9 @@ export const VisualEditor: React.FC<{
       if (preview) return;
       e.preventDefault();
 
+      // 右键不作任何处理, 防止右键时还可以拖动
+      if (e.button === 2) return;
+
       if (e.shiftKey) {
         // 如果摁住了shift键，如果此时没有选中的 block，就选中该 block，否则使该 block 的数据选中状态取反
         if (focusData.focus.length <= 1) {
@@ -227,8 +230,6 @@ export const VisualEditor: React.FC<{
       if (preview) return;
       e.preventDefault();
 
-      // 右键不作任何处理
-      if (e.button === 1) return;
       // 判断不是点击了 container 容器就返回
       if (e.target !== e.currentTarget) return;
 
@@ -387,9 +388,35 @@ export const VisualEditor: React.FC<{
         },
         dragging: false,
         markLines: (() => {
-          const x = [{ left: 0, showLeft: 0}];
-          const y = [{ top: 0, showTop: 0}];
+          const x: {left: number, showLeft: number}[] = [];
+          const y: {top: number, showTop: number}[] = [];
           // 参考线处理 TODO...
+
+          // 拖动的与未选中的对齐
+          const { unFocus } = focusData;
+          unFocus.forEach(v => {
+            // 水平方向，拖动的顶部对未拖动的顶部
+            y.push({ top: v.top, showTop: v.top });
+            // 水平方向，拖动的中间对未拖动的中间
+            y.push({ top: v.top + v.height / 2 - block.height / 2, showTop: v.top + v.height / 2 });
+            // 水平方向，拖动的底部对未拖动的底部
+            y.push({ top: v.top + v.height - block.height, showTop: v.top + v.height});
+            // 水平方向，拖动的底部对未拖动的顶部
+            y.push({ top: v.top - block.height, showTop: v.top });
+            // 水平方向，拖动的底部对未拖动的底部
+            y.push({ top: v.top + v.height, showTop: v.top + v.height });
+
+            // 垂直方向，拖动的左侧对未拖动的左侧
+            x.push({ left: v.left, showLeft: v.left });
+            // 垂直方向，拖动的中间对未拖动的中间
+            x.push({ left: v.left + v.width / 2 - block.width / 2, showLeft: v.left + v.width / 2 });
+            // 垂直方向，拖动的右侧对未拖动的右侧
+            x.push({ left: v.left + v.width - block.width, showLeft: v.left + v.width});
+            // 垂直方向，拖动的右侧对未拖动的左侧
+            x.push({ left: v.left - block.width, showLeft: v.left });
+            // 垂直方向，拖动的左侧对未拖动的右侧
+            x.push({ left: v.left + v.width, showLeft: v.left + v.width });
+          });
           return { x, y }
         })()
       }
@@ -432,7 +459,6 @@ export const VisualEditor: React.FC<{
       });
     }
   };
-
 
   //#region 功能操作栏按钮组
   const buttons: {
@@ -608,6 +634,10 @@ export const VisualEditor: React.FC<{
                           />
                   })
                 }
+                {/*参考辅助线 start*/}
+                {blockDraggier.mark.x !== null && <div className={classModule['editor-mark-x']} style={{left: `${blockDraggier.mark.x}px`}}></div>}
+                {blockDraggier.mark.y !== null && <div className={classModule['editor-mark-y']} style={{top: `${blockDraggier.mark.y}px`}}></div>}
+                {/*参考辅助线 end*/}
               </div>
             </div>
           </div>
