@@ -214,6 +214,32 @@ export function useVisualCommand({
         }
     });
 
+    //  注册导入节点数据时，更新节点数据命令
+    commander.useRegistry({
+        name: 'updateBlock',
+        execute: (newBlock: VisualEditorBlockData, oldBlock: VisualEditorBlockData) => {
+            let blocks = deepcopy(value.blocks);
+            const data = {
+                before: blocks,
+                after: (() => {
+                    blocks = [...blocks];
+                    const index = value.blocks.indexOf(oldBlock);
+                    if (index > -1) {
+                        blocks.splice(index, 1, newBlock);
+                    }
+                    return deepcopy(blocks);
+                })(),
+            }
+            return {
+                redo: () => {
+                    updateBlocks(deepcopy(data.after));
+                },
+                undo: () => {
+                    updateBlocks(deepcopy(data.before));
+                },
+            }
+        },
+    })
 
     // 初始内置的命令 undo，redo
     commander.useInit(); // 在底部调用
@@ -225,5 +251,6 @@ export function useVisualCommand({
         placeBottom: () => commander.state.commands.placeBottom(),
         placeTop: () => commander.state.commands.placeTop(),
         updateValue: (newModelValue: VisualEditorValue) => commander.state.commands.updateValue(newModelValue),
+        updateBlock: (newModelValue: VisualEditorValue, oldModelValue: VisualEditorBlockData) => commander.state.commands.updateBlock(newModelValue, oldModelValue),
     }
 }

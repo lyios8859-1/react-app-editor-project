@@ -10,6 +10,7 @@ export const VisualEditorBlock: React.FC<{
     block: VisualEditorBlockData,
     config: VisualEditorConfig,
     onMouseDown?: (e: React.MouseEvent<HTMLDivElement>) => void,
+    onContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void,
     editing?: boolean,
     preview?: boolean,
 }> = (props) => {
@@ -65,6 +66,7 @@ export const VisualEditorBlock: React.FC<{
                 style={style}
                 ref={elRef}
                 onMouseDown={props.onMouseDown}
+                onContextMenu={props.onContextMenu}
             >
                 {render}
             </div>

@@ -11,6 +11,7 @@ import { useCallbackRef } from './hook/useCallbackRef';
 import { useVisualCommand } from './editor.command';
 import { createEvent } from './plugin/event';
 import { $$dialog } from './service/dialog/$$dialog';
+import { $$dropdown, DropdownOption } from './service/dropdown/$$dropdown';
 
 export const VisualEditor: React.FC<{
   value: VisualEditorValue,
@@ -58,6 +59,31 @@ export const VisualEditor: React.FC<{
      */
     updateValue: (value: VisualEditorValue) => {
       props.onChange({...value});
+    },
+    /**
+     * 查看（导出）数据
+     * @param block 
+     */
+    showBlockData: (block: VisualEditorBlockData) => {
+      $$dialog.textarea(JSON.stringify(block), {editReadonly: true, title: '导出的JSON数据'});
+    },
+    /**
+     * 导入数据
+     * @param block 
+     */
+    importBlockData: async (block: VisualEditorBlockData) => {
+      const text = await $$dialog.textarea('', { title: '请输入需要导入的节点数据JSON字符串' });
+      try {
+        const data = JSON.parse(text || '');
+        commander.updateBlock(data, block);
+      } catch (e) {
+        console.error(e)
+        notification.open({
+          type: 'error',
+          message: '导入失败！',
+          description: '导入的数据格式不正常，请检查！'
+        })
+      }
     },
     /**
      * 清空选中的数据
@@ -386,6 +412,28 @@ export const VisualEditor: React.FC<{
     updateValue: methods.updateValue
   });
 
+  const handler = {
+    onContextMenuBlock: (ev: React.MouseEvent<HTMLDivElement>, block: VisualEditorBlockData) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+
+
+      $$dropdown({
+        reference: ev.nativeEvent,
+        render: () => {
+          return (<>
+            <DropdownOption label="置顶节点" icon="icon-place-top" onClick={commander.placeTop}/>
+            <DropdownOption label="置底节点" icon="icon-place-bottom" onClick={commander.placeBottom}/>
+            <DropdownOption label="删除节点" icon="icon-delete" onClick={commander.delete}/>
+            <DropdownOption label="查看数据" icon="icon-browse" {...{onClick: () => methods.showBlockData(block)}}/>
+            <DropdownOption label="导入节点" icon="icon-import" {...{onClick: () => methods.importBlockData(block)}}/>
+          </>)
+        }
+      });
+    }
+  };
+
+
   //#region 功能操作栏按钮组
   const buttons: {
     label: string | (() => string),
@@ -556,6 +604,7 @@ export const VisualEditor: React.FC<{
                             preview={preview}
                             key={index}
                             onMouseDown={e => focusHandler.block(e, block, index)}
+                            onContextMenu={e => handler.onContextMenuBlock(e, block)}
                           />
                   })
                 }
